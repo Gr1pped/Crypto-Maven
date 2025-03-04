@@ -161,6 +161,76 @@
             color: #aaa;
             margin-top: 5px;
         }
+        
+        /* Popup styles */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .popup-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .popup-container {
+            background-color: #16213e;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 25px;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            transform: scale(0.8);
+            transition: transform 0.3s ease;
+        }
+        
+        .popup-overlay.active .popup-container {
+            transform: scale(1);
+        }
+        
+        .popup-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 24px;
+            color: #aaa;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        
+        .popup-close:hover {
+            color: #00d4ff;
+        }
+        
+        .popup-header {
+            border-bottom: 2px solid #00d4ff;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .popup-header h2 {
+            color: #00d4ff;
+            margin: 0;
+            padding-right: 30px;
+        }
+        
+        .popup-content {
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
@@ -181,7 +251,114 @@
             </div>
         </div>
     </div>
+    
+    <!-- Popup Window Structure -->
+    <div id="prediction-popup" class="popup-overlay">
+        <div class="popup-container">
+            <div class="popup-close" id="popup-close">&times;</div>
+            <div class="popup-header">
+                <h2>Bitcoin Price Prediction</h2>
+            </div>
+            <div class="popup-content" id="popup-content">
+                <!-- Content will be dynamically inserted here -->
+            </div>
+        </div>
+    </div>
 
     <script src="script.js"></script>
+    
+    <script>
+        // Additional JavaScript for the popup functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const popupOverlay = document.getElementById('prediction-popup');
+            const popupClose = document.getElementById('popup-close');
+            const popupContent = document.getElementById('popup-content');
+            const cryptoButton = document.getElementById('crypto-button');
+            
+            // Original displayCryptoPrediction function will still be called, but we'll also show popup
+            const originalCryptoButtonClick = cryptoButton.onclick;
+            
+            cryptoButton.addEventListener('click', function() {
+                // Show loading state in popup
+                popupContent.innerHTML = '<div class="loading">Analyzing recent news data...</div>';
+                popupOverlay.classList.add('active');
+                
+                // Fetch crypto news and display in popup
+                fetchCryptoNews()
+                    .then(news => {
+                        const prediction = analyzeCryptoNews(news);
+                        displayCryptoPredictionInPopup(prediction);
+                    })
+                    .catch(error => {
+                        popupContent.innerHTML = `<div class="error">Failed to fetch crypto news. ${error.message}</div>`;
+                    });
+            });
+            
+            // Close popup when clicking the close button
+            popupClose.addEventListener('click', function() {
+                popupOverlay.classList.remove('active');
+            });
+            
+            // Close popup when clicking outside the popup content
+            popupOverlay.addEventListener('click', function(event) {
+                if (event.target === popupOverlay) {
+                    popupOverlay.classList.remove('active');
+                }
+            });
+            
+            // Function to display crypto prediction in popup
+            function displayCryptoPredictionInPopup(prediction) {
+                const isPriceUp = parseFloat(prediction.percentageChange) >= 0;
+                const directionClass = isPriceUp ? 'up' : 'down';
+                const directionArrow = isPriceUp ? '↑' : '↓';
+                
+                let html = `
+                    <h3>Based on recent news analysis:</h3>
+                    
+                    <div class="prediction ${directionClass}">
+                        Bitcoin Price Prediction (24h): $${prediction.predictedPrice}
+                        <span class="change">${directionArrow} ${Math.abs(prediction.percentageChange)}%</span>
+                    </div>
+                    
+                    <p>Current price: $${prediction.currentPrice}</p>
+                    
+                    <div class="sentiment-meter">
+                        <p>News Sentiment: ${getSentimentText(prediction.sentimentScore)}</p>
+                    </div>
+                    
+                    <h3>Recent News Analyzed:</h3>
+                `;
+                
+                // Add news items
+                if (prediction.newsItems && prediction.newsItems.length > 0) {
+                    prediction.newsItems.forEach(item => {
+                        html += `
+                            <div class="news-item">
+                                <p><strong>${item.title}</strong></p>
+                                <p class="news-source">Source: ${item.source || 'Unknown'}</p>
+                            </div>
+                        `;
+                    });
+                } else {
+                    html += `<p>No specific news articles found. Prediction based on general market trends.</p>`;
+                }
+                
+                html += `
+                    <p class="disclaimer">Disclaimer: This prediction is for educational purposes only and should not be used for financial decisions.</p>
+                `;
+                
+                popupContent.innerHTML = html;
+            }
+            
+            // Helper function to get sentiment text
+            function getSentimentText(score) {
+                if (score > 0.5) return 'Strongly Bullish';
+                if (score > 0.1) return 'Bullish';
+                if (score > -0.1) return 'Neutral';
+                if (score > -0.5) return 'Bearish';
+                return 'Strongly Bearish';
+            }
+        });
+    </script>
 </body>
 </html>

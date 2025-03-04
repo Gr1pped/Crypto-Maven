@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Maven</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1a1a2e;
+            color: #e6e6e6;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        
+        .container {
+            width: 90%;
+            max-width: 800px;
+            background-color: #16213e;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #00d4ff;
+            margin-bottom: 30px;
+        }
+        
+        .button-container {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+        }
+        
+        .button {
+            padding: 15px 30px;
+            font-size: 18px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            width: 180px;
+            text-align: center;
+        }
+        
+        .crypto-button {
+            background: linear-gradient(135deg, #f7931a, #ff9900);
+            color: #000;
+        }
+        
+        .crypto-button:hover {
+            background: linear-gradient(135deg, #ff9900, #f7931a);
+            transform: translateY(-3px);
+            box-shadow: 0 7px 14px rgba(247, 147, 26, 0.4);
+        }
+        
+        .stocks-button {
+            background: linear-gradient(135deg, #00a8e8, #0077cc);
+            color: white;
+        }
+        
+        .stocks-button:hover {
+            background: linear-gradient(135deg, #0077cc, #00a8e8);
+            transform: translateY(-3px);
+            box-shadow: 0 7px 14px rgba(0, 168, 232, 0.4);
+        }
+        
+        .result-container {
+            background-color: #0f3460;
+            padding: 20px;
+            border-radius: 10px;
+            min-height: 300px;
+            display: none;
+        }
+        
+        .result-header {
+            border-bottom: 2px solid #00d4ff;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .result-header h2 {
+            margin: 0;
+            color: #00d4ff;
+        }
+        
+        .result-content {
+            line-height: 1.6;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-style: italic;
+            color: #aaa;
+        }
+        
+        .prediction {
+            font-size: 28px;
+            text-align: center;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        
+        .prediction.up {
+            color: #00ff9d;
+        }
+        
+        .prediction.down {
+            color: #ff414d;
+        }
+        
+        .stock-item {
+            padding: 15px;
+            background-color: #16213e;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 5px solid;
+        }
+        
+        .stock-item.buy {
+            border-color: #00ff9d;
+        }
+        
+        .stock-item.sell {
+            border-color: #ff414d;
+        }
+        
+        .stock-ticker {
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .stock-recommendation {
+            font-weight: bold;
+            float: right;
+        }
+        
+        .buy {
+            color: #00ff9d;
+        }
+        
+        .sell {
+            color: #ff414d;
+        }
+        
+        .news-source {
+            font-size: 12px;
+            color: #aaa;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Crypto Maven</h1>
+        <div class="button-container">
+            <button id="crypto-button" class="button crypto-button">Crypto Prediction</button>
+            <button id="stocks-button" class="button stocks-button">Stock Picks</button>
+        </div>
+        
+        <div id="result-container" class="result-container">
+            <div class="result-header">
+                <h2 id="result-title">Results</h2>
+                <span id="result-date"></span>
+            </div>
+            <div id="result-content" class="result-content">
+                <div class="loading">Select an option above to generate analysis...</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

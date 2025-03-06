@@ -162,6 +162,33 @@
             margin-top: 5px;
         }
         
+        .error {
+            color: #ff414d;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .news-item {
+            margin-bottom: 15px;
+        }
+        
+        .change {
+            margin-left: 10px;
+        }
+        
+        .disclaimer {
+            font-size: 12px;
+            color: #aaa;
+            font-style: italic;
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        .sentiment-meter {
+            text-align: center;
+            margin: 15px 0;
+        }
+        
         /* Popup styles */
         .popup-overlay {
             position: fixed;
@@ -281,22 +308,21 @@
                 popupContent.innerHTML = '<div class="loading">Analyzing recent news data...</div>';
                 popupOverlay.classList.add('active');
                 
+                // Make functions available globally
+                window.fetchCryptoNews = fetchCryptoNews;
+                window.analyzeCryptoNews = analyzeCryptoNews;
+                
                 // Use the same functions from script.js for crypto analysis
                 // This will run alongside the main handler instead of replacing it
                 setTimeout(function() {
-                    if (window.fetchCryptoNews && window.analyzeCryptoNews) {
-                        window.fetchCryptoNews()
-                            .then(news => {
-                                const prediction = window.analyzeCryptoNews(news);
-                                displayCryptoPredictionInPopup(prediction);
-                            })
-                            .catch(error => {
-                                popupContent.innerHTML = `<div class="error">Failed to fetch crypto news. ${error.message}</div>`;
-                            });
-                    } else {
-                        // Fallback if functions aren't available yet
-                        popupContent.innerHTML = `<div class="error">Analysis functions not loaded correctly. Try refreshing the page.</div>`;
-                    }
+                    fetchCryptoNews()
+                        .then(news => {
+                            const prediction = analyzeCryptoNews(news);
+                            displayCryptoPredictionInPopup(prediction);
+                        })
+                        .catch(error => {
+                            popupContent.innerHTML = `<div class="error">Failed to fetch crypto news. ${error.message}</div>`;
+                        });
                 }, 100); // Small delay to ensure script.js has loaded
             });
             
@@ -363,6 +389,76 @@
                 if (score > -0.1) return 'Neutral';
                 if (score > -0.5) return 'Bearish';
                 return 'Strongly Bearish';
+            }
+            
+            // Define fetchCryptoNews and analyzeCryptoNews functions to make them accessible to the popup
+            async function fetchCryptoNews() {
+                try {
+                    const response = await fetch("/.netlify/functions/brave-search", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            query: "bitcoin cryptocurrency price movement market trends last 24 hours",
+                            count: 15
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    return data;
+                } catch (error) {
+                    console.error("Error fetching crypto news:", error);
+                    throw error;
+                }
+            }
+            
+            function analyzeCryptoNews(newsData) {
+                // This would normally use NLP and sentiment analysis
+                // For demonstration, we'll use a simulated sentiment analysis
+                
+                // Simulate sentiment analysis
+                let sentimentScore = 0;
+                let bullishKeywords = ['surge', 'rally', 'gain', 'jump', 'high', 'bullish', 'growth', 'positive', 'up'];
+                let bearishKeywords = ['fall', 'drop', 'decline', 'crash', 'low', 'bearish', 'negative', 'down', 'plunge'];
+                
+                // For simulation purposes, generate a mix of positive and negative signals
+                const newsItems = newsData.web?.results || [];
+                
+                if (newsItems.length === 0) {
+                    // If no real news, generate a random prediction
+                    sentimentScore = Math.random() * 2 - 1; // Between -1 and 1
+                } else {
+                    // Process each news item
+                    newsItems.forEach(item => {
+                        const content = (item.title + " " + (item.description || "")).toLowerCase();
+                        
+                        // Count bullish and bearish keywords
+                        bullishKeywords.forEach(keyword => {
+                            if (content.includes(keyword)) sentimentScore += 0.2;
+                        });
+                        
+                        bearishKeywords.forEach(keyword => {
+                            if (content.includes(keyword)) sentimentScore -= 0.2;
+                        });
+                    });
+                    
+                    // Normalize sentiment score
+                    sentimentScore = Math.min(Math.max(sentimentScore, -1), 1);
+                }
+                
+                // Generate price prediction based on sentiment
+                const currentBtcPrice = 63000 + Math.random() * 2000; // Simulated current price
+                const predictedChange = sentimentScore * 5; // Maximum 5% change
+                const predictedPrice = currentBtcPrice * (1 + predictedChange / 100);
+                
+                return {
+                    currentPrice: currentBtcPrice.toFixed(2),
+                    predictedPrice: predictedPrice.toFixed(2),
+                    percentageChange: predictedChange.toFixed(2),
+                    sentimentScore: sentimentScore,
+                    newsItems: newsItems.slice(0, 3) // Include top 3 news items
+                };
             }
         });
     </script>

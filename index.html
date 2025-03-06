@@ -275,23 +275,29 @@
             const popupContent = document.getElementById('popup-content');
             const cryptoButton = document.getElementById('crypto-button');
             
-            // Original displayCryptoPrediction function will still be called, but we'll also show popup
-            const originalCryptoButtonClick = cryptoButton.onclick;
-            
+            // Add popup functionality without interfering with the main crypto button click handler
             cryptoButton.addEventListener('click', function() {
                 // Show loading state in popup
                 popupContent.innerHTML = '<div class="loading">Analyzing recent news data...</div>';
                 popupOverlay.classList.add('active');
                 
-                // Fetch crypto news and display in popup
-                fetchCryptoNews()
-                    .then(news => {
-                        const prediction = analyzeCryptoNews(news);
-                        displayCryptoPredictionInPopup(prediction);
-                    })
-                    .catch(error => {
-                        popupContent.innerHTML = `<div class="error">Failed to fetch crypto news. ${error.message}</div>`;
-                    });
+                // Use the same functions from script.js for crypto analysis
+                // This will run alongside the main handler instead of replacing it
+                setTimeout(function() {
+                    if (window.fetchCryptoNews && window.analyzeCryptoNews) {
+                        window.fetchCryptoNews()
+                            .then(news => {
+                                const prediction = window.analyzeCryptoNews(news);
+                                displayCryptoPredictionInPopup(prediction);
+                            })
+                            .catch(error => {
+                                popupContent.innerHTML = `<div class="error">Failed to fetch crypto news. ${error.message}</div>`;
+                            });
+                    } else {
+                        // Fallback if functions aren't available yet
+                        popupContent.innerHTML = `<div class="error">Analysis functions not loaded correctly. Try refreshing the page.</div>`;
+                    }
+                }, 100); // Small delay to ensure script.js has loaded
             });
             
             // Close popup when clicking the close button
